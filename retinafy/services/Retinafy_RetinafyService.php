@@ -22,7 +22,10 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
         // If transform specified, create 2x of it.
         if (isset($transformHandle))
         {
-            $this->create2xImage($image, $transformHandle);
+            // Use AssetTransformsService (AssetTransformModel).
+            $transform = craft()->assetTransforms->getTransformByHandle($transformHandle);
+
+            $this->create2xImage($image, $transform);
 
             return;
         }
@@ -50,7 +53,14 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
      */
     protected function create1xImage(AssetFileModel $image)
     {
-        $markup = $image->getUrl($this->getTransform($image->width, true)) . '" srcset="' .  $image->getUrl() . ' 2x"';
+        // Set transform params.
+        $params = [
+            'mode'  => 'fit',
+            'width' => round($image->width / 2)
+        ];
+
+        // Markup for the image.
+        $markup = $image->getUrl($params) . '" srcset="' .  $image->getUrl() . ' 2x"';
 
         $this->generateMarkup($markup);
     }
@@ -58,40 +68,36 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
     /**
      * Create the 2x image.
      *
-     * @param \Craft\AssetFileModel $image
-     * @param string                $transformHandle
+     * @param \Craft\AssetFileModel      $image
+     * @param \Craft\AssetTransformModel $transform
      * @return void
      */
-    protected function create2xImage(AssetFileModel $image, $transformHandle)
+    protected function create2xImage(AssetFileModel $image, AssetTransformModel $transform)
     {
-        $originalWidth  = (int) $image->getWidth(false);
-        $transformWidth = (int) $image->getWidth($transformHandle);
+        // Grab sizes as int.
+        $originalWidth   = (int) $image->getWidth(false);
+        $transformWidth  = (int) $transform->width;
+        $transformHeight = (int) $transform->height;
+
+        // Set transform params, uses params set in Craft.
+        $params = [
+            'mode'     => $transform->mode,
+            'width'    => $transformWidth * 2,
+            'height'   => $transformHeight *2,
+            'quality'  => $transform->quality,
+            'position' => $transform->position
+        ];
 
         // Markup for the specified transform.
-        $markup = $image->getUrl($transformHandle);
+        $markup = $image->getUrl($transform->handle);
 
         // If original width is bigger than the 2x size for the specified transform, add the srcset.
         if ($originalWidth >= $transformWidth * 2)
         {
-            $markup .= '" srcset="' . $image->getUrl($this->getTransform($transformWidth)) . ' 2x';
+            $markup .= '" srcset="' . $image->getUrl($params) . ' 2x';
         }
 
         $this->generateMarkup($markup);
-    }
-
-    /**
-     * Get transform.
-     *
-     * @param int  $width
-     * @param bool $is2x - If the image we pass in is the 2x version
-     * @return array
-     */
-    protected function getTransform($width, $is2x = false)
-    {
-        return [
-            'mode'  => 'fit',
-            'width' => $is2x ? round($width / 2) : $width * 2
-        ];
     }
 
     /**

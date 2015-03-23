@@ -1,0 +1,20 @@
+{% import "_includes/forms" as forms %}
+
+<h2>Retinafy settings</h2>
+
+{{ forms.textField({
+    label: "2x suffix" | t,
+    id: 'suffix',
+    name: 'suffix',
+    required: true,
+    placeholder: "@2x, .2x etc.",
+    value: (settings.suffix is defined) ? settings.suffix : ""
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Bypass 2x suffix when using a transform" | t,
+    id: 'force',
+    name: 'force',
+    on: (settings.force is defined) ? settings.force : "",
+    errors: settings.getErrors('force')
+}) }}

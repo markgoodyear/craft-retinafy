@@ -3,6 +3,30 @@ namespace Craft;
 
 class Retinafy_RetinafyService extends BaseApplicationComponent
 {
+    /**
+     * The Retinafy plugin instance.
+     *
+     * @var \Craft\RetinafyPlugin
+     */
+    protected $plugin;
+
+    /**
+     * Retinafy's settings.
+     *
+     * @var array
+     */
+    protected $settings;
+
+    /**
+     * Get Retinafy's settings.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->plugin = craft()->plugins->getPlugin('retinafy');
+        $this->settings = $this->plugin->getSettings();
+    }
 
     /**
      * Determin which image to create.
@@ -13,25 +37,34 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
      */
     public function retinaService(AssetFileModel $image, $transformHandle)
     {
-        // Return original image (with transform if specified) if not intended for @2x.
-        if (!$this->is2xFile($image))
+        // Not transform, not 2x file. Return image url.
+        if (!isset($transformHandle) && !$this->is2xFile($image))
         {
-            return $this->generateMarkup($image->getUrl(isset($transformHandle) ? $transformHandle : false));
+            $markup = $image->getUrl(false);
         }
 
-        // If transform specified, create 2x of it.
-        if (isset($transformHandle))
+        // Transform, not forced and not 2x file. Return transform url
+        if (isset($transformHandle) && !$this->settings->force && !$this->is2xFile($image))
+        {
+            $markup = $image->getUrl($transformHandle);
+        }
+
+        // Not transform, 2x file. Create 1x image.
+        if (!isset($transformHandle) && $this->is2xFile($image))
+        {
+            $markup = $this->create1xImage($image);
+        }
+
+        // Transform, is forced or 2x file. Create 2x image.
+        if (isset($transformHandle) && ($this->settings->force || $this->is2xFile($image)))
         {
             // Use AssetTransformsService (AssetTransformModel).
             $transform = craft()->assetTransforms->getTransformByHandle($transformHandle);
 
-            $this->create2xImage($image, $transform);
-
-            return;
+            $markup = $this->create2xImage($image, $transform);
         }
 
-        // No transform handle. Uploaded image is the 2x version, so we create the 1x version.
-        $this->create1xImage($image);
+        echo $markup;
     }
 
     /**
@@ -42,14 +75,14 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
      */
     protected function is2xFile(AssetFileModel $image)
     {
-        return preg_match('/@2x\\.\\w+$/', $image->filename) === 1;
+        return preg_match('/' . $this->settings->suffix . '\\.\\w+$/', $image->filename) === 1;
     }
 
     /**
      * Create the 1x image.
      *
      * @param \Craft\AssetFileModel $image
-     * @return void
+     * @return string               $markup
      */
     protected function create1xImage(AssetFileModel $image)
     {
@@ -62,7 +95,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
         // Markup for the image.
         $markup = $image->getUrl($params) . '" srcset="' .  $image->getUrl() . ' 2x"';
 
-        $this->generateMarkup($markup);
+        return $markup;
     }
 
     /**
@@ -70,7 +103,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
      *
      * @param \Craft\AssetFileModel      $image
      * @param \Craft\AssetTransformModel $transform
-     * @return void
+     * @return string                    $markup
      */
     protected function create2xImage(AssetFileModel $image, AssetTransformModel $transform)
     {
@@ -97,18 +130,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
             $markup .= '" srcset="' . $image->getUrl($params) . ' 2x';
         }
 
-        $this->generateMarkup($markup);
-    }
-
-    /**
-     * Echo out the markup.
-     *
-     * @param string $markup
-     * @return void
-     */
-    protected function generateMarkup($markup)
-    {
-        echo $markup;
+        return $markup;
     }
 
 }

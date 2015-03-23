@@ -4,6 +4,21 @@ namespace Craft;
 class RetinafyPlugin extends BasePlugin
 {
 
+    protected function defineSettings()
+    {
+        return [
+            'force'  => [ AttributeType::Bool, 'default' => false ],
+            'suffix' => [ AttributeType::String, 'default' => '@2x', 'required' => true ]
+        ];
+    }
+
+    public function getSettingsHtml()
+    {
+        return craft()->templates->render('retinafy/_settings', [
+            'settings' => $this->getSettings()
+        ]);
+    }
+
     /**
      * Adds the Twig extension.
      *
@@ -33,7 +48,7 @@ class RetinafyPlugin extends BasePlugin
      */
     public function getVersion()
     {
-        return '1.1.0';
+        return '1.2.0';
     }
 
     /**

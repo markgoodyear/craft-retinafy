@@ -4,6 +4,11 @@ namespace Craft;
 class RetinafyPlugin extends BasePlugin
 {
 
+    /**
+     * Define plugin settings.
+     *
+     * @return array
+     */
     protected function defineSettings()
     {
         return [
@@ -12,6 +17,11 @@ class RetinafyPlugin extends BasePlugin
         ];
     }
 
+    /**
+     * Get the HTML for settings.
+     *
+     * @return string
+     */
     public function getSettingsHtml()
     {
         return craft()->templates->render('retinafy/_settings', [

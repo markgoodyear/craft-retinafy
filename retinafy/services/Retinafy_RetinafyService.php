@@ -3,6 +3,7 @@ namespace Craft;
 
 class Retinafy_RetinafyService extends BaseApplicationComponent
 {
+
     /**
      * The Retinafy plugin instance.
      *
@@ -29,7 +30,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
     }
 
     /**
-     * Determin which image to create.
+     * Generate image and markup.
      *
      * @param \Craft\AssetFileModel $image
      * @param string                $transformHandle
@@ -37,25 +38,25 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
      */
     public function retinaService(AssetFileModel $image, $transformHandle)
     {
-        // Not transform, not 2x file. Return image url.
+        // Not transform and not 2x file. Return image url.
         if (!isset($transformHandle) && !$this->is2xFile($image))
         {
             $markup = $image->getUrl(false);
         }
 
-        // Transform, not forced and not 2x file. Return transform url
+        // Transform and not forced and not 2x file. Return transform image url.
         if (isset($transformHandle) && !$this->settings->force && !$this->is2xFile($image))
         {
             $markup = $image->getUrl($transformHandle);
         }
 
-        // Not transform, 2x file. Create 1x image.
+        // Not transform and 2x file. Create 1x image.
         if (!isset($transformHandle) && $this->is2xFile($image))
         {
             $markup = $this->create1xImage($image);
         }
 
-        // Transform, is forced or 2x file. Create 2x image.
+        // Transform and is forced or 2x file. Create 2x image.
         if (isset($transformHandle) && ($this->settings->force || $this->is2xFile($image)))
         {
             // Use AssetTransformsService (AssetTransformModel).
@@ -116,7 +117,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
         $params = [
             'mode'     => $transform->mode,
             'width'    => $transformWidth * 2,
-            'height'   => $transformHeight *2,
+            'height'   => $transformHeight * 2,
             'quality'  => $transform->quality,
             'position' => $transform->position
         ];

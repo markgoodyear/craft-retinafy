@@ -37,5 +37,10 @@ Retinafy allows passing in a custom image transform:
 ```
 When passing in a transform, Retinafy will use the generated image as the image tags `src`, and then determine if the uploaded image can be used as a 2x version. If the image is large enough, it will create the 2x version of the transform and add in the required `srcset` markup.
 
+## Plugin Settings
+Retinafy currently provides plugin settings to control the 2x suffix to suit your workflow (`@2x`, `.2x` etc.), and to bypass the 2x suffix when using transforms. Bypassing the 2x suffix on transforms is useful in many situations, such as when creating thumbnails for an image gallery where the original file wouldn't necessarily be 2x, but the thumbnails could display a 2x image if the original is big enough.
+
+![Retinafy settings page](/screenshots/settings.png)
+
 # License
 Retinafy is licensed under the [MIT license](/LICENSE.md).

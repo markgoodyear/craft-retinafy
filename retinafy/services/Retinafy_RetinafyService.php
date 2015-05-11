@@ -94,7 +94,7 @@ class Retinafy_RetinafyService extends BaseApplicationComponent
         ];
 
         // Markup for the image.
-        $markup = $image->getUrl($params) . '" srcset="' .  $image->getUrl() . ' 2x"';
+        $markup = $image->getUrl($params) . '" srcset="' .  $image->getUrl() . ' 2x';
 
         return $markup;
     }

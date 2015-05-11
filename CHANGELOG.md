@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1
+- Fix extra quote when generating 2x markup
+
 ## 1.2.0
 - Add option to specify the 2x suffix
 - Add option to bypass requirement of 2x suffix when using a transform
